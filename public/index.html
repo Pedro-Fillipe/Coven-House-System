@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coven House — Gestão</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="veil"></div>
+  <header class="topbar">
+    <div class="brand">
+      <span class="sigil" aria-hidden="true">♰</span>
+      <div>
+        <p class="eyebrow">Sistema de Gestão</p>
+        <h1>Coven House</h1>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Módulos">
+      <button class="nav-btn active" data-view="dashboard">Visão Geral</button>
+      <button class="nav-btn" data-view="vendas">Vendas</button>
+      <button class="nav-btn" data-view="estoque">Estoque</button>
+      <button class="nav-btn" data-view="gastos">Gastos</button>
+      <button class="nav-btn" data-view="agenda">Agendamentos</button>
+    </nav>
+  </header>
+
+  <main>
+    <p id="toast" class="toast" hidden></p>
+
+    <section id="view-dashboard" class="view active">
+      <div class="section-head">
+        <h2>Visão Geral</h2>
+        <p>Indicadores em tempo real da operação.</p>
+      </div>
+      <div class="kpi-grid">
+        <article class="kpi">
+          <span>Total em Vendas</span>
+          <strong id="kpi-vendas">R$ 0,00</strong>
+        </article>
+        <article class="kpi">
+          <span>Total em Gastos</span>
+          <strong id="kpi-gastos">R$ 0,00</strong>
+        </article>
+        <article class="kpi accent">
+          <span>Lucro Líquido Real</span>
+          <strong id="kpi-lucro">R$ 0,00</strong>
+        </article>
+        <article class="kpi">
+          <span>Total do Estoque</span>
+          <strong id="kpi-estoque">0</strong>
+        </article>
+      </div>
+      <div class="panel">
+        <h3>Últimas vendas</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Produto</th>
+                <th>Variação</th>
+                <th>Qtd</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="dash-vendas"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-vendas" class="view">
+      <div class="section-head">
+        <h2>Vendas</h2>
+        <p>Registre saídas, controle estoque e modalidades de envio.</p>
+      </div>
+      <div class="layout">
+        <form id="form-venda" class="panel form">
+          <h3>Nova venda</h3>
+          <label>Cliente
+            <input type="text" name="cliente" placeholder="Nome do cliente">
+          </label>
+          <label>Produto
+            <select name="produto_id" required></select>
+          </label>
+          <label>Variação
+            <select name="variacao_id" required></select>
+          </label>
+          <div class="row">
+            <label>Quantidade
+              <input type="number" name="quantidade" min="1" value="1" required>
+            </label>
+            <label>Data
+              <input type="date" name="data" required>
+            </label>
+          </div>
+          <label>Tipo de frete
+            <select name="tipo_frete" required>
+              <option value="retirada">Sem envio / Retirada</option>
+              <option value="incluido">Envio incluído</option>
+              <option value="separado">Envio separado</option>
+            </select>
+          </label>
+          <label id="frete-field" hidden>Valor do frete
+            <input type="number" name="valor_frete" min="0" step="0.01" value="0">
+          </label>
+          <p class="hint" id="venda-hint">O total será calculado pelo preço de venda do produto.</p>
+          <p class="lucro-box">Total estimado: <strong id="venda-total">R$ 0,00</strong></p>
+          <button type="submit" class="btn">Registrar venda</button>
+        </form>
+        <div class="panel stretch">
+          <h3>Histórico</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Cliente</th>
+                  <th>Produto</th>
+                  <th>Variação</th>
+                  <th>Qtd</th>
+                  <th>Frete</th>
+                  <th>Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="lista-vendas"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-estoque" class="view">
+      <div class="section-head">
+        <div>
+          <h2>Estoque</h2>
+          <p>Cadastro por variação, precificação e margem unitária.</p>
+        </div>
+        <button class="btn" id="btn-novo-produto">Novo produto</button>
+      </div>
+      <div id="lista-produtos" class="product-grid"></div>
+    </section>
+
+    <section id="view-gastos" class="view">
+      <div class="section-head">
+        <h2>Gastos</h2>
+        <p>Despesas operacionais, materiais e envios.</p>
+      </div>
+      <div class="layout">
+        <form id="form-gasto" class="panel form">
+          <h3>Novo gasto</h3>
+          <label>Descrição
+            <input type="text" name="descricao" required>
+          </label>
+          <label>Categoria
+            <select name="categoria" required>
+              <option>Envio</option>
+              <option>Materiais</option>
+              <option>Embalagem</option>
+              <option>Marketing</option>
+              <option>Operacional</option>
+              <option>Outros</option>
+            </select>
+          </label>
+          <div class="row">
+            <label>Valor
+              <input type="number" name="valor" min="0" step="0.01" required>
+            </label>
+            <label>Data
+              <input type="date" name="data" required>
+            </label>
+          </div>
+          <button type="submit" class="btn">Lançar gasto</button>
+        </form>
+        <div class="panel stretch">
+          <h3>Lançamentos</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Descrição</th>
+                  <th>Categoria</th>
+                  <th>Valor</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="lista-gastos"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-agenda" class="view">
+      <div class="section-head">
+        <h2>Agendamentos</h2>
+        <p>Retiradas, provas e encontros com clientes.</p>
+      </div>
+      <div class="layout">
+        <form id="form-agenda" class="panel form">
+          <h3>Novo agendamento</h3>
+          <input type="hidden" name="id">
+          <label>Cliente
+            <input type="text" name="cliente" required>
+          </label>
+          <label>Tipo
+            <select name="tipo" required>
+              <option>Retirada</option>
+              <option>Prova</option>
+              <option>Ensaio</option>
+              <option>Reunião</option>
+              <option>Outro</option>
+            </select>
+          </label>
+          <div class="row">
+            <label>Data
+              <input type="date" name="data" required>
+            </label>
+            <label>Hora
+              <input type="time" name="hora" required>
+            </label>
+          </div>
+          <label>Status
+            <select name="status">
+              <option>Pendente</option>
+              <option>Confirmado</option>
+              <option>Concluído</option>
+              <option>Cancelado</option>
+            </select>
+          </label>
+          <button type="submit" class="btn">Salvar agendamento</button>
+        </form>
+        <div class="panel stretch">
+          <h3>Calendário operacional</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Hora</th>
+                  <th>Cliente</th>
+                  <th>Tipo</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="lista-agenda"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="modal-produto">
+    <form id="form-produto" class="modal-card">
+      <header>
+        <h3 id="modal-produto-titulo">Novo produto</h3>
+        <button type="button" class="icon-btn" id="fechar-produto" aria-label="Fechar">✕</button>
+      </header>
+      <input type="hidden" name="id">
+      <label>Nome comercial
+        <input type="text" name="nome" required>
+      </label>
+      <div class="row">
+        <label>Preço de custo
+          <input type="number" name="preco_custo" min="0" step="0.01" required>
+        </label>
+        <label>Custo de embalagem
+          <input type="number" name="custo_embalagem" min="0" step="0.01" required>
+        </label>
+      </div>
+      <label>Preço de venda
+        <input type="number" name="preco_venda" min="0" step="0.01" required>
+      </label>
+      <p class="lucro-box">Lucro líquido unitário: <strong id="lucro-preview">R$ 0,00</strong></p>
+      <p class="hint">Lucro = venda − (custo + embalagem)</p>
+      <footer>
+        <button type="button" class="btn ghost" id="cancelar-produto">Cancelar</button>
+        <button type="submit" class="btn">Salvar produto</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="modal-variacao">
+    <form id="form-variacao" class="modal-card">
+      <header>
+        <h3>Nova variação</h3>
+        <button type="button" class="icon-btn" id="fechar-variacao" aria-label="Fechar">✕</button>
+      </header>
+      <input type="hidden" name="produto_id">
+      <input type="hidden" name="id">
+      <div class="row">
+        <label>Tamanho
+          <input type="text" name="tamanho" placeholder="P, M, G, Único" required>
+        </label>
+        <label>Cor
+          <input type="text" name="cor" placeholder="Preto, Vinho" required>
+        </label>
+      </div>
+      <label>Quantidade em estoque
+        <input type="number" name="quantidade_estoque" min="0" required>
+      </label>
+      <footer>
+        <button type="button" class="btn ghost" id="cancelar-variacao">Cancelar</button>
+        <button type="submit" class="btn">Salvar variação</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
